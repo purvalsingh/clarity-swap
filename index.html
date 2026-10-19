@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Clarity Swap · powered by Jupiter</title>
+<meta name="description" content="A plain-language Solana swap. Dollar fees, price protection you can read, and safety checks on unverified tokens. Powered by Jupiter.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0D12;--panel:#12171F;--panel2:#1A212D;--line:#242D3C;--line2:#2E3949;--text:#E9EEF6;--muted:#8B97AC;--dim:#5E6A80;
+  --lime:#C7F284;--lime-ink:#0E1A04;--mint:#4FD1A5;--amber:#F2C14E;--red:#F27272;--blue:#7AA7FF;
+}
+*{box-sizing:border-box;margin:0}
+html{background:var(--bg)}
+body{background:radial-gradient(900px 500px at 50% -120px,rgba(122,167,255,.08),transparent 70%),var(--bg);color:var(--text);font:15px/1.45 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:disabled{cursor:not-allowed}
+a{color:var(--blue)}
+:focus-visible{outline:2px solid var(--lime);outline-offset:2px}
+.mono{font-family:'JetBrains Mono',monospace;font-feature-settings:"tnum"}
+.banner{background:#141A24;color:var(--muted);font-size:12px;text-align:center;padding:7px 16px;border-bottom:1px solid var(--line)}
+.banner b{color:var(--text);font-weight:600}
+.app{display:grid;grid-template-columns:1fr minmax(0,460px) 1fr;gap:36px;padding:28px 16px 120px}
+.app>main{grid-column:2}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:10px}
+.brand{display:flex;gap:10px;align-items:center;font-weight:700;font-size:17px}
+.brand small{display:block;font-weight:500;font-size:11.5px;color:var(--muted);margin-top:-2px}
+.logo{width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,#7AA7FF,#4FD1A5);display:grid;place-items:center;color:#06101f;font-weight:800;font-size:15px}
+.wallet{display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);padding:8px 14px;border-radius:999px;font-weight:600;font-size:13.5px;flex:none}
+.wallet.on{padding:7px 12px 7px 8px}
+.wallet img,.wallet .av{width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#7AA7FF,#C7F284)}
+.wallet.cta-like{background:var(--lime);color:var(--lime-ink);border-color:transparent}
+.card{background:linear-gradient(180deg,#141A23,#11161E);border:1px solid var(--line);border-radius:24px;padding:14px;box-shadow:0 24px 60px rgba(0,0,0,.35)}
+.tabs{display:flex;gap:4px;justify-content:space-between;align-items:center;margin-bottom:10px}
+.seg{display:flex;gap:4px;background:var(--bg);padding:4px;border-radius:12px}
+.seg button{padding:6px 12px;border-radius:9px;font-weight:600;font-size:14px;color:var(--muted)}
+.seg button.on{background:var(--panel2);color:var(--text)}
+.mode{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);padding:6px 10px;border-radius:10px;border:1px solid var(--line)}
+.mode i{width:7px;height:7px;border-radius:50%;background:var(--mint);display:inline-block}
+.box{background:var(--bg);border:1px solid var(--line);border-radius:18px;padding:14px 14px 12px;transition:border-color .15s}
+.box:focus-within{border-color:var(--line2)}
+.box+.box{margin-top:6px}
+.lbl{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);margin-bottom:6px;gap:8px}
+.lbl .bal{display:flex;align-items:center;gap:6px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.amt{font-size:34px;font-weight:600;letter-spacing:-.02em;background:none;border:0;color:var(--text);width:100%;outline:none;min-width:0;padding:0}
+.amt::placeholder{color:var(--dim)}
+.amt.loading{color:var(--dim)}
+.token{display:flex;gap:8px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:6px 12px 6px 6px;font-weight:600;flex:none;transition:border-color .15s}
+.token:hover{border-color:var(--line2)}
+.ticon{width:24px;height:24px;border-radius:50%;background:var(--line2);object-fit:cover;flex:none}
+.sub{font-size:13px;color:var(--muted);margin-top:2px;min-height:19px}
+.chip{font-size:11.5px;font-weight:700;border:1px solid var(--line);border-radius:6px;padding:1px 6px;color:var(--muted)}
+.chip.max{color:var(--lime);border-color:#3a4a20}
+.flip{display:grid;place-items:center;margin:-14px auto;position:relative;z-index:2;width:38px;height:38px;border-radius:12px;background:var(--panel2);border:3px solid var(--panel);transition:transform .25s}
+.flip:hover{transform:rotate(180deg)}
+.protect{display:flex;gap:10px;align-items:flex-start;margin-top:10px;padding:10px 12px;border-radius:14px;background:rgba(79,209,165,.07);border:1px solid rgba(79,209,165,.24);font-size:13px}
+.protect svg{flex:none;margin-top:1px}
+.protect b{color:var(--mint)}
+.notice{display:flex;gap:10px;margin-top:10px;padding:10px 12px;border-radius:14px;background:rgba(242,193,78,.07);border:1px solid rgba(242,193,78,.3);font-size:13px}
+.notice[hidden]{display:none}
+.notice b{color:var(--amber)}
+.notice button{margin-top:6px;font-weight:700;color:var(--amber);text-decoration:underline}
+.summary{margin-top:10px;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.summary summary{list-style:none;display:flex;justify-content:space-between;align-items:center;padding:11px 12px;font-size:13.5px;cursor:pointer}
+.summary summary::-webkit-details-marker{display:none}
+.chips{display:flex;gap:12px;color:var(--muted);align-items:center}
+.chips b{color:var(--text);font-weight:600}
+.ring{width:14px;height:14px;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:2.5}
+.summary .detail{padding:2px 12px 12px;font-size:13px}
+.detail .r{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px dashed var(--line)}
+.detail .r>span:first-child{color:var(--muted);display:flex;gap:6px;align-items:center;flex:none}
+.q{width:15px;height:15px;border-radius:50%;border:1px solid var(--muted);font-size:10px;display:inline-grid;place-items:center;color:var(--muted);position:relative;font-style:normal}
+.q:hover::after,.q:focus::after{content:attr(data-tip);position:absolute;bottom:22px;left:-10px;width:230px;background:#232C3D;color:var(--text);padding:8px 10px;border-radius:8px;font-size:12px;line-height:1.4;z-index:9;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.route{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.route em{font-style:normal;background:var(--panel2);border-radius:6px;padding:1px 6px}
+.cta{margin-top:12px;width:100%;padding:16px;border-radius:16px;background:var(--lime);color:var(--lime-ink);font-weight:700;font-size:16px;transition:filter .15s,opacity .15s}
+.cta:hover:not(:disabled){filter:brightness(1.05)}
+.cta:disabled{background:var(--panel2);color:var(--muted)}
+.cta small{display:block;font-weight:500;font-size:12px;opacity:.7}
+.err{color:var(--red)}
+.skel{display:inline-block;height:.9em;width:5ch;border-radius:4px;background:linear-gradient(90deg,var(--panel2),var(--line2),var(--panel2));background-size:200% 100%;animation:sh 1.2s infinite;vertical-align:middle}
+@keyframes sh{to{background-position:-200% 0}}
+.scrim{position:fixed;inset:0;background:rgba(5,7,10,.72);backdrop-filter:blur(4px);display:none;align-items:flex-end;justify-content:center;z-index:20}
+.scrim.on{display:flex}
+.sheet{width:min(460px,100%);max-height:92vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:24px 24px 0 0;padding:20px 18px 22px;animation:up .28s cubic-bezier(.2,.8,.2,1)}
+@media(min-width:720px){.scrim{align-items:center}.sheet{border-radius:24px}}
+@keyframes up{from{transform:translateY(40px);opacity:0}}
+.sheet h3{font-size:18px;margin-bottom:4px}
+.sheet .lead{color:var(--muted);font-size:14px;margin-bottom:16px}
+.big{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-bottom:14px}
+.big .side{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:12px;min-width:0}
+.big .k{font-size:12px;color:var(--muted)}
+.big .v{font-size:18px;font-weight:600;margin-top:2px;overflow-wrap:anywhere}
+.steps{list-style:none;padding:0;margin:0 0 14px;font-size:13.5px}
+.steps li{display:flex;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.steps .n{flex:none;width:20px;height:20px;border-radius:50%;background:var(--panel2);display:grid;place-items:center;font-size:11px;font-weight:700}
+.ghost{width:100%;margin-top:8px;padding:12px;color:var(--muted);font-weight:600}
+.linkbtn{display:block;margin:10px auto 0;color:var(--muted);font-size:13px;text-decoration:underline}
+.search{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px 12px;color:var(--text);font:inherit;margin-bottom:10px;outline:none}
+.search:focus{border-color:var(--lime)}
+.list{max-height:46vh;overflow:auto;margin:0 -6px}
+.tok{display:flex;align-items:center;gap:12px;width:100%;padding:9px 8px;border-radius:12px;text-align:left}
+.tok:hover,.tok:focus-visible{background:var(--panel2)}
+.tok .nm{font-weight:600;display:flex;align-items:center;gap:4px}
+.tok .meta{font-size:12px;color:var(--muted)}
+.tok .rt{margin-left:auto;text-align:right;font-size:12.5px;color:var(--muted);flex:none}
+.vb{display:inline-grid;place-items:center;width:14px;height:14px;border-radius:50%;background:var(--blue);color:#081022;font-size:9px;font-weight:800}
+.wp{font-size:10.5px;font-weight:700;color:#1a0606;background:var(--amber);border-radius:5px;padding:0 5px}
+.danger{border:1px solid rgba(242,114,114,.35);background:rgba(242,114,114,.07);border-radius:14px;padding:6px 12px;margin-bottom:12px}
+.danger .kv{border-top-color:rgba(242,114,114,.2)}
+.danger .kv:first-child{border-top:0}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px}
+.kv span:first-child{color:var(--muted)}
+.bad{color:var(--red);font-weight:600}.ok{color:var(--mint);font-weight:600}
+.spin{width:44px;height:44px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--lime);animation:sp .9s linear infinite;margin:6px auto 14px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.check{width:56px;height:56px;border-radius:50%;background:rgba(79,209,165,.15);display:grid;place-items:center;margin:4px auto 12px;color:var(--mint);font-size:28px}
+.xmark{width:56px;height:56px;border-radius:50%;background:rgba(242,114,114,.12);display:grid;place-items:center;margin:4px auto 12px;color:var(--red);font-size:26px}
+.wl{display:flex;align-items:center;gap:12px;width:100%;padding:12px;border:1px solid var(--line);border-radius:14px;margin-bottom:8px;font-weight:600;text-align:left}
+.wl:hover{border-color:var(--line2);background:var(--panel2)}
+.wl img{width:28px;height:28px;border-radius:8px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;background:#232C3D;border:1px solid var(--line2);padding:10px 14px;border-radius:12px;font-size:13px;z-index:40;transition:.25s;pointer-events:none;max-width:calc(100% - 32px)}
+.toast.on{opacity:1;transform:translateX(-50%)}
+.notes{grid-column:3;align-self:start;position:sticky;top:28px;font-size:13px;color:var(--muted);max-width:290px}
+.notes h4{color:var(--text);font-size:12px;margin:0 0 10px;letter-spacing:.08em;text-transform:uppercase}
+.notes ol{padding-left:18px}.notes li{margin-bottom:9px}.notes b{color:var(--text)}
+.demo{position:fixed;left:16px;bottom:16px;z-index:15;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px;font-size:12px;width:200px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.demo[hidden]{display:none}
+.demo b{display:block;color:var(--muted);letter-spacing:.08em;font-size:11px;margin-bottom:6px}
+.demo button{display:block;width:100%;text-align:left;padding:6px 8px;border-radius:8px}
+.demo button:hover{background:var(--panel2)}
+.live{display:inline-flex;align-items:center;gap:5px;color:var(--mint);font-size:11.5px;font-weight:600}
+@media(max-width:1100px){.notes{display:none}.app{grid-template-columns:minmax(0,460px);justify-content:center}.app>main{grid-column:1}}
+@media(max-width:560px){
+  .app{padding:14px 16px 150px}
+  .amt{font-size:30px}
+  .seg button{padding:6px 9px;font-size:13px}
+  .ctawrap{position:fixed;left:0;right:0;bottom:0;padding:10px 16px 18px;background:linear-gradient(transparent,var(--bg) 30%);z-index:10}
+  .ctawrap .cta{margin:0}
+  .demo{position:static;width:auto;margin-top:14px;display:flex;flex-wrap:wrap;gap:4px;box-shadow:none}
+  .demo[hidden]{display:none}
+  .demo b{width:100%;margin:0 0 2px 4px}.demo button{width:auto;padding:6px 10px;border:1px solid var(--line)}
+  .toast{bottom:100px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="banner">Independent interface built on <b>Jupiter's public API</b> · not affiliated with Jupiter · always check what your wallet asks you to sign</div>
+<div class="app">
+<main>
+  <header>
+    <div class="brand"><span class="logo">C</span><span>Clarity Swap<small>powered by Jupiter</small></span></div>
+    <button class="wallet cta-like" id="walletBtn">Connect wallet</button>
+  </header>
+
+  <section class="card" aria-label="Swap">
+    <div class="tabs">
+      <div class="seg" role="tablist"><button class="on" role="tab" aria-selected="true">Swap</button></div>
+      <button class="mode" id="openMode" aria-label="How swaps work"><i></i><span>Auto</span> ▾</button>
+    </div>
+
+    <div class="box">
+      <div class="lbl"><span>You pay</span><span class="bal">Balance <span class="mono" id="payBal">–</span><button class="chip" id="half">HALF</button><button class="chip max" id="max">MAX</button></span></div>
+      <div class="row">
+        <input class="amt mono" id="pay" inputmode="decimal" autocomplete="off" value="250" placeholder="0" aria-label="Amount to pay">
+        <button class="token" data-pick="pay"><img class="ticon" id="payIcon" alt=""><span id="payTk">USDC</span> ▾</button>
+      </div>
+      <div class="sub mono" id="payUsd">&nbsp;</div>
+    </div>
+    <button class="flip" id="flip" aria-label="Flip tokens">⇅</button>
+    <div class="box">
+      <div class="lbl"><span>You get</span><span class="bal">Balance <span class="mono" id="getBal">–</span></span></div>
+      <div class="row">
+        <div class="amt mono" id="get" aria-live="polite">0</div>
+        <button class="token" data-pick="get"><img class="ticon" id="getIcon" alt=""><span id="getTk">SOL</span> ▾</button>
+      </div>
+      <div class="sub mono" id="getUsd">&nbsp;</div>
+    </div>
+
+    <div class="protect">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4FD1A5" stroke-width="2" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg>
+      <div id="protectTxt"><b>Price protected.</b> You'll get at least <b class="mono" id="minGet">–</b> or the swap cancels and your tokens stay put.</div>
+    </div>
+
+    <div class="notice" id="lowSol" hidden><span aria-hidden="true">⚠</span><div><b>You need a little SOL for network fees.</b> <span id="lowSolTxt">A swap needs about 0.003 SOL (fee + a new token account). Without it the swap would fail.</span><br><button id="fixSol">Fix it: add 0.005 SOL from this swap</button></div></div>
+
+    <details class="summary" id="sum">
+      <summary>
+        <span class="chips"><span>Total fees <b class="mono" id="fee">–</b></span><span class="live"><svg class="ring" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" stroke="#242D3C"/><circle id="ringC" cx="8" cy="8" r="6" stroke="#4FD1A5" stroke-dasharray="37.7" stroke-dashoffset="0"/></svg><span id="liveTxt">Live</span></span></span>
+        <span style="color:var(--muted)">Details ▾</span>
+      </summary>
+      <div class="detail">
+        <div class="r"><span>Rate</span><span class="mono" id="rate">–</span></div>
+        <div class="r"><span>Price impact <i class="q" tabindex="0" data-tip="How much your trade moves the market price. Under 1% is normal.">?</i></span><span class="mono" id="impact">–</span></div>
+        <div class="r"><span>Jupiter fee <i class="q" tabindex="0" data-tip="Jupiter's fee for routing your swap. Already included in what you get.">?</i></span><span class="mono" id="jfee">–</span></div>
+        <div class="r"><span>Network fee <i class="q" tabindex="0" data-tip="Paid to Solana to process the swap. On many swaps Jupiter pays it for you.">?</i></span><span class="mono" id="netfee">–</span></div>
+        <div class="r"><span>Route <i class="q" tabindex="0" data-tip="Where your trade is filled. Jupiter compares markets and market makers for the best total price.">?</i></span><span class="route" id="route">–</span></div>
+      </div>
+    </details>
+
+    <div class="ctawrap"><button class="cta" id="review">Review swap</button></div>
+  </section>
+
+  <div class="demo" id="demo" aria-label="Demo scenarios"><b>NO WALLET? TRY A SCENARIO</b>
+    <button data-demo="happy">✓ Normal swap</button>
+    <button data-demo="moved">↯ Price moves</button>
+    <button data-demo="lowsol">⚠ Low SOL</button>
+    <button data-demo="scam">⛔ Unverified token</button>
+  </div>
+</main>
+
+<aside class="notes">
+  <h4>Why Clarity Swap</h4>
+  <ol>
+    <li><b>Plain words.</b> No "Ultra", "JIT" or "V1 transactions". One Auto mode that just works.</li>
+    <li><b>Dollars first.</b> Fees, value and impact in $, next to the price.</li>
+    <li><b>Protection as a promise.</b> "You'll get at least X, or nothing happens."</li>
+    <li><b>Safety checks.</b> Unverified tokens are stopped with live data: age, holders, liquidity.</li>
+    <li><b>Failures explained.</b> If a swap doesn't land, you see why and what to do next.</li>
+    <li><b>Review before wallet.</b> Tells you exactly what your wallet should show.</li>
+  </ol>
+  <p style="margin-top:14px;font-size:12px">Quotes, swaps, balances and token data come from Jupiter's public API. Your keys never leave your wallet.</p>
+</aside>
+</div>
+
+<div class="scrim" id="connectSheet" role="dialog" aria-modal="true" aria-label="Connect a wallet"><div class="sheet">
+  <h3>Connect a wallet</h3>
+  <p class="lead">Clarity Swap never sees your keys. Your wallet asks before anything is signed.</p>
+  <div id="walletList"></div>
+  <button class="ghost" data-close>Not now</button>
+</div></div>
+
+<div class="scrim" id="acctSheet" role="dialog" aria-modal="true" aria-label="Wallet"><div class="sheet">
+  <h3 id="acctName">Wallet</h3>
+  <p class="lead mono" id="acctAddr" style="overflow-wrap:anywhere"></p>
+  <button class="cta" id="copyAddr">Copy address</button>
+  <button class="ghost" id="disconnect">Disconnect</button>
+</div></div>
+
+<div class="scrim" id="modeSheet" role="dialog" aria-modal="true" aria-label="How swaps work"><div class="sheet">
+  <h3>Auto mode</h3>
+  <p class="lead">One setting instead of jargon. For every quote, Jupiter picks the best route and sets price protection for that trade.</p>
+  <div class="kv"><span>Price protection</span><span>Set per trade by Jupiter</span></div>
+  <div class="kv"><span>Network fee</span><span>Often paid by Jupiter</span></div>
+  <div class="kv"><span>Route</span><span>Markets + market makers</span></div>
+  <button class="cta" data-close>Got it</button>
+</div></div>
+
+<div class="scrim" id="reviewSheet" role="dialog" aria-modal="true" aria-label="Review swap"><div class="sheet">
+  <h3>Review your swap</h3>
+  <p class="lead">Check this once. Your wallet will ask you to approve exactly this.</p>
+  <div class="big">
+    <div class="side"><div class="k">You pay</div><div class="v mono" id="rPay"></div><div class="sub mono" id="rPayUsd"></div></div>
+    <div aria-hidden="true">→</div>
+    <div class="side"><div class="k">You get</div><div class="v mono" id="rGet"></div><div class="sub mono" id="rMin"></div></div>
+  </div>
+  <ol class="steps">
+    <li><span class="n">1</span><span>Your wallet opens. Approve the swap. <span style="color:var(--muted)">You can't get less than the minimum shown.</span></span></li>
+    <li><span class="n">2</span><span>Swap lands in a few seconds. Fees: <b class="mono" id="rFee"></b>.</span></li>
+    <li><span class="n">3</span><span>If the price moves past your protection, it cancels and your tokens stay put.</span></li>
+  </ol>
+  <button class="cta" id="confirm">Open wallet to approve</button>
+  <button class="ghost" data-close>Go back</button>
+</div></div>
+
+<div class="scrim" id="pickSheet" role="dialog" aria-modal="true" aria-label="Select token"><div class="sheet">
+  <h3>Select a token</h3>
+  <p class="lead">Blue check = verified by Jupiter. Anything else gets a safety check first.</p>
+  <input class="search" id="q" placeholder="Search name, symbol or paste address" aria-label="Search tokens" autocomplete="off">
+  <div class="list" id="tokList" role="listbox"></div>
+  <button class="ghost" data-close>Close</button>
+</div></div>
+
+<div class="scrim" id="scamSheet" role="dialog" aria-modal="true" aria-label="Token safety check"><div class="sheet">
+  <h3 style="color:var(--red)" id="scamTitle"></h3>
+  <p class="lead" id="scamLead"></p>
+  <div class="danger" id="scamStats"></div>
+  <button class="cta" id="scamBack">Pick a verified token instead</button>
+  <button class="linkbtn" id="riskAnyway">I understand the risk, continue anyway</button>
+</div></div>
+
+<div class="scrim" id="waitSheet" role="dialog" aria-modal="true" aria-label="Waiting for wallet"><div class="sheet" style="text-align:center">
+  <div class="spin" aria-hidden="true"></div>
+  <h3 id="waitTitle">Approve in your wallet</h3>
+  <p class="lead" id="waitLead"></p>
+  <button class="ghost" data-close id="waitCancel">Cancel</button>
+</div></div>
+
+<div class="scrim" id="doneSheet" role="dialog" aria-modal="true" aria-label="Swap complete"><div class="sheet">
+  <div class="check" aria-hidden="true">✓</div>
+  <h3 style="text-align:center">Swap complete</h3>
+  <p class="lead" style="text-align:center">You received <b class="mono" id="dGet" style="color:var(--mint)"></b><span id="dBetter"></span></p>
+  <div class="kv"><span>Paid</span><span class="mono" id="dPay"></span></div>
+  <div class="kv"><span>Fees</span><span class="mono" id="dFee"></span></div>
+  <div class="kv"><span>Receipt</span><span id="dLink"></span></div>
+  <button class="cta" data-close>Done</button>
+</div></div>
+
+<div class="scrim" id="failSheet" role="dialog" aria-modal="true" aria-label="Swap failed"><div class="sheet">
+  <div class="xmark" aria-hidden="true">!</div>
+  <h3 style="text-align:center" id="failTitle">The swap didn't go through</h3>
+  <p class="lead" style="text-align:center" id="failLead"></p>
+  <button class="cta" id="failRetry">Get a fresh quote and try again</button>
+  <button class="ghost" data-close>Close</button>
+</div></div>
+
+<div class="scrim" id="movedSheet" role="dialog" aria-modal="true" aria-label="Price moved"><div class="sheet">
+  <h3>The price moved, so we stopped the swap</h3>
+  <p class="lead"><b style="color:var(--mint)">Your tokens stayed put.</b> The price moved more than your protection allows while you were approving.</p>
+  <div class="big">
+    <div class="side"><div class="k">Old minimum</div><div class="v mono" id="mOld" style="text-decoration:line-through;color:var(--muted)"></div></div>
+    <div aria-hidden="true">→</div>
+    <div class="side"><div class="k">New minimum</div><div class="v mono" id="mNew"></div><div class="sub" id="mDiff"></div></div>
+  </div>
+  <button class="cta" id="retry">Swap at the new price</button>
+  <button class="ghost" data-close>Not now</button>
+</div></div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const API='https://lite-api.jup.ag';
+const $=id=>document.getElementById(id);
+const SOL_MINT='So11111111111111111111111111111111111111112';
+const USDC_MINT='EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
+const FALLBACK={
+ [SOL_MINT]:{id:SOL_MINT,symbol:'SOL',name:'Solana',decimals:9,usdPrice:105,isVerified:true,icon:'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png'},
+ [USDC_MINT]:{id:USDC_MINT,symbol:'USDC',name:'USD Coin',decimals:6,usdPrice:1,isVerified:true,icon:'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png'},
+};
+const POPULAR=[SOL_MINT,USDC_MINT,'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB','JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN','DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263','jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL'];
+const DEMO={[USDC_MINT]:1204.5,[SOL_MINT]:3.2};
+const st={pay:FALLBACK[USDC_MINT],get:FALLBACK[SOL_MINT],quote:null,scenario:'happy',pickSide:'get',pending:null,timer:null,t0:0,wallet:null,account:null,real:null};
+
+const fmt=(n,d)=>Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const tidy=n=>Number(n).toLocaleString('en-US',{maximumFractionDigits:Math.abs(n)>=1?4:6});
+function amt(n){n=Number(n);if(!isFinite(n)||n===0)return '0';const a=Math.abs(n);
+  if(a>=1000)return fmt(n,2);if(a>=1)return fmt(n,4);if(a>=0.0001)return fmt(n,6);return n.toPrecision(3)}
+const usd=n=>n==null||!isFinite(n)?'':(n<0.01&&n>0?'<$0.01':'$'+fmt(n,2));
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const compact=n=>'$'+Intl.NumberFormat('en',{notation:'compact',maximumFractionDigits:1}).format(n);
+const short=a=>a.slice(0,4)+'…'+a.slice(-4);
+const isReal=()=>!!st.account;
+function bal(t){if(isReal())return st.real?.[t.id]??0;return DEMO[t.id]??0}
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),2800)}
+async function j(u,opt){const r=await fetch(API+u,opt);const b=await r.json().catch(()=>({}));if(!r.ok&&!b.error&&!b.errorMessage)throw new Error(r.status);return b}
+const b64ToBytes=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const bytesToB64=b=>{let s='';for(let i=0;i<b.length;i+=0x8000)s+=String.fromCharCode.apply(null,b.subarray(i,i+0x8000));return btoa(s)};
+
+// ---------- wallets (Wallet Standard) ----------
+const wallets=[];
+function registerWallets(...ws){for(const w of ws){if(w.chains?.some(c=>c.startsWith('solana:'))&&w.features?.['standard:connect']&&w.features?.['solana:signTransaction']&&!wallets.includes(w))wallets.push(w)}}
+window.addEventListener('wallet-standard:register-wallet',e=>{try{e.detail({register:registerWallets})}catch(_){}});
+window.dispatchEvent(new CustomEvent('wallet-standard:app-ready',{detail:{register:registerWallets}}));
+function renderWalletList(){
+  $('walletList').innerHTML=wallets.length?wallets.map((w,i)=>`<button class="wl" data-w="${i}"><img src="${esc(w.icon)}" alt="">${esc(w.name)}</button>`).join(''):
+  `<p class="lead">No Solana wallet found in this browser. Install <a href="https://phantom.com" target="_blank" rel="noopener">Phantom</a>, <a href="https://solflare.com" target="_blank" rel="noopener">Solflare</a> or <a href="https://backpack.app" target="_blank" rel="noopener">Backpack</a>, then reload. On mobile, open this page inside your wallet app's browser.</p>`}
+$('walletList').addEventListener('click',async e=>{const b=e.target.closest('[data-w]');if(!b)return;const w=wallets[+b.dataset.w];
+  try{const r=await w.features['standard:connect'].connect();const acct=(r?.accounts||w.accounts)[0];if(!acct)throw new Error('No account');
+    st.wallet=w;st.account=acct;closeAll();onConnected();}catch(err){toast('Connection cancelled')}});
+async function onConnected(){
+  st.scenario='happy';$('demo').hidden=true;$('lowSol').hidden=true;
+  const btn=$('walletBtn');btn.classList.remove('cta-like');btn.classList.add('on');btn.innerHTML=`<img src="${esc(st.wallet.icon)}" alt="">${short(st.account.address)}`;
+  await loadBalances();quote();
+}
+async function loadBalances(){if(!isReal())return;try{const r=await j('/ultra/v1/balances/'+st.account.address);const m={};
+  for(const [k,v] of Object.entries(r||{})){const id=k==='SOL'?SOL_MINT:k;m[id]=(m[id]||0)+(v.uiAmount||0)}st.real=m}catch(e){st.real=st.real||{}}renderTokens();checkLowSol();validate()}
+function checkLowSol(){if(!isReal())return;const sol=st.real?.[SOL_MINT]??0;const low=sol<0.003&&st.quote&&st.quote.gasless===false;
+  $('lowSol').hidden=!low;$('fixSol').hidden=true;$('lowSolTxt').textContent=`You have ${tidy(sol)} SOL; this swap needs about 0.003 SOL. Add a little SOL to your wallet first.`}
+$('walletBtn').onclick=()=>{if(isReal()){$('acctName').textContent=st.wallet.name;$('acctAddr').textContent=st.account.address;open('acctSheet')}else{renderWalletList();open('connectSheet')}};
+$('copyAddr').onclick=()=>{navigator.clipboard?.writeText(st.account.address);toast('Address copied')};
+$('disconnect').onclick=async()=>{try{await st.wallet.features['standard:disconnect']?.disconnect()}catch(_){}
+  st.wallet=null;st.account=null;st.real=null;closeAll();const b=$('walletBtn');b.className='wallet cta-like';b.textContent='Connect wallet';$('demo').hidden=false;renderTokens();quote()};
+
+// ---------- quote ----------
+function payAmount(){return parseFloat(($('pay').value||'').replace(/,/g,''))||0}
+function renderTokens(){for(const s of ['pay','get']){const t=st[s];$(s+'Tk').textContent=t.symbol;$(s+'Icon').src=t.icon||'';$(s+'Icon').alt=t.symbol;$(s+'Bal').textContent=tidy(bal(t))}}
+function renderPay(){const p=payAmount();$('payUsd').textContent=st.pay.usdPrice?'≈ '+usd(p*st.pay.usdPrice):' '}
+function setCta(text,sub,disabled){$('review').disabled=disabled;$('review').innerHTML=text+(sub?'<small>'+sub+'</small>':'')}
+function validate(){
+  const p=payAmount();
+  if(!isReal()&&st.scenario==='lowsol'){setCta('Add SOL for fees first','',true);return false}
+  if(!p){setCta('Enter an amount','',true);return false}
+  if(p>bal(st.pay)+1e-12){setCta('Not enough '+st.pay.symbol,'You have '+tidy(bal(st.pay))+' '+st.pay.symbol,true);return false}
+  if(!st.quote){setCta('Finding best price…','',true);return false}
+  if(isReal()&&!$('lowSol').hidden){setCta('Add SOL for fees first','',true);return false}
+  setCta('Review swap','&#128274; Nothing moves without your signature',false);return true
+}
+function orderUrl(withTaker){const raw=Math.round(payAmount()*10**st.pay.decimals);
+  return `/ultra/v1/order?inputMint=${st.pay.id}&outputMint=${st.get.id}&amount=${raw}`+(withTaker&&isReal()?'&taker='+st.account.address:'')}
+async function quote(){
+  clearTimeout(st.timer);renderPay();
+  const p=payAmount();if(!p){st.quote=null;$('get').textContent='0';$('getUsd').innerHTML='&nbsp;';validate();return}
+  const url=orderUrl(false);st.pending=url;
+  $('get').classList.add('loading');$('fee').innerHTML='<span class="skel"></span>';st.quote=null;validate();
+  let q;try{q=await j(url)}catch(e){try{await new Promise(r=>setTimeout(r,900));q=await j(url)}catch(e2){q=null}}
+  if(st.pending!==url)return;
+  $('get').classList.remove('loading');
+  if(!q||!q.outAmount||q.errorMessage&&!q.outAmount){$('get').textContent='—';$('getUsd').innerHTML='<span class="err">'+esc(q?.errorMessage||'Couldn\'t get a price right now.')+'</span>';$('fee').textContent='–';validate();st.timer=setTimeout(quote,15000);return}
+  st.quote=q;renderQuote();checkLowSol();st.t0=Date.now();st.timer=setTimeout(quote,15000);
+}
+function quoteFees(q){const v=parseFloat(q.swapUsdValue||q.inUsdValue||0);const jf=v*(q.feeBps||0)/1e4;
+  const netL=(q.signatureFeeLamports||0)+(q.prioritizationFeeLamports||0)+(q.rentFeeLamports||0);const solP=st.solPrice||105;
+  const net=q.gasless?0:(netL?netL/1e9*solP:0.00001*solP);return {jf,net,total:jf+net}}
+function renderQuote(){
+  const q=st.quote,a=st.pay,b=st.get,p=payAmount();
+  const out=q.outAmount/10**b.decimals,min=q.otherAmountThreshold/10**b.decimals;
+  $('get').textContent=amt(out);
+  const outUsd=q.outUsdValue?parseFloat(q.outUsdValue):(b.usdPrice?out*b.usdPrice:null);
+  $('getUsd').textContent=(outUsd!=null?'≈ '+usd(outUsd)+' · ':'')+'1 '+b.symbol+' = '+(b.usdPrice?usd(b.usdPrice):'–');
+  $('protectTxt').innerHTML=q.guaranteedPrice||q.otherAmountThreshold===q.outAmount?
+    `<b>Guaranteed price.</b> You'll get exactly <b class="mono">${amt(out)} ${esc(b.symbol)}</b> or the swap cancels and your tokens stay put.`:
+    `<b>Price protected.</b> You'll get at least <b class="mono">${amt(min)} ${esc(b.symbol)}</b> or the swap cancels and your tokens stay put.`;
+  const f=quoteFees(q);$('fee').textContent=usd(f.total)||'$0.00';
+  $('jfee').textContent=usd(f.jf)+' ('+((q.feeBps||0)/100)+'%)';
+  $('netfee').innerHTML=q.gasless?'<span class="ok">Paid by Jupiter</span>':usd(f.net);
+  $('rate').textContent='1 '+a.symbol+' = '+amt(out/p)+' '+b.symbol;
+  const imp=Math.abs(parseFloat(q.priceImpactPct||0))*100;
+  $('impact').innerHTML=imp<1?`<span class="ok">${imp<0.01?'<0.01':fmt(imp,2)}% · Low</span>`:imp<3?`<span style="color:var(--amber)">${fmt(imp,2)}% · Medium</span>`:`<span class="bad">${fmt(imp,2)}% · High</span>`;
+  const parts={};for(const r of q.routePlan||[]){const l=r.swapInfo?.label||'Market';parts[l]=(parts[l]||0)+(r.percent||0)}
+  const pr=Object.entries(parts).sort((x,y)=>y[1]-x[1]);
+  $('route').innerHTML=pr.map(([l,v])=>`<em>${esc(l)}${pr.length>1?' '+Math.round(v)+'%':''}</em>`).join('')||'–';
+  validate();
+}
+setInterval(()=>{if(!st.t0)return;const f=Math.min((Date.now()-st.t0)/15000,1);$('ringC').setAttribute('stroke-dashoffset',String(37.7*f))},250);
+let deb;$('pay').addEventListener('input',e=>{st.flipMem=null;e.target.value=e.target.value.replace(/[^0-9.,]/g,'');renderPay();clearTimeout(deb);deb=setTimeout(quote,350)});
+
+function setToken(side,t){const other=side==='pay'?'get':'pay';if(t.id===st[other].id)st[other]=st[side];st[side]=t;renderTokens();quote()}
+$('flip').onclick=()=>{const q=st.quote,before=st.pay.id+st.get.id,after=st.get.id+st.pay.id,cur=$('pay').value;
+  if(st.flipMem&&st.flipMem.key===after)$('pay').value=st.flipMem.val;else if(q)$('pay').value=String(+(q.outAmount/10**st.get.decimals).toFixed(6));
+  st.flipMem={key:before,val:cur};[st.pay,st.get]=[st.get,st.pay];renderTokens();quote()};
+const reserve=t=>t.id===SOL_MINT?0.005:0;
+$('half').onclick=()=>{$('pay').value=String(+(bal(st.pay)/2).toFixed(6));quote()};
+$('max').onclick=()=>{const r=reserve(st.pay);$('pay').value=String(+Math.max(bal(st.pay)-r,0).toFixed(6));quote();if(r)toast('Kept 0.005 SOL aside so your swap never fails on fees')};
+
+// ---------- sheets ----------
+const open=id=>$(id).classList.add('on');
+const closeAll=()=>document.querySelectorAll('.scrim.on').forEach(x=>x.classList.remove('on'));
+document.querySelectorAll('.scrim').forEach(s=>s.addEventListener('click',e=>{if(e.target===s||e.target.closest('[data-close]'))s.classList.remove('on')}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAll()});
+$('openMode').onclick=()=>open('modeSheet');
+
+// ---------- token picker ----------
+let popular=[];
+async function loadPopular(){const get=()=>j('/tokens/v2/search?query='+POPULAR.join(','));
+  try{let r;try{r=await get()}catch(e){await new Promise(z=>setTimeout(z,1200));r=await get()}popular=POPULAR.map(id=>r.find(t=>t.id===id)).filter(Boolean)}catch(e){popular=Object.values(FALLBACK)}
+  for(const t of popular){if(t.id===st.pay.id)st.pay=t;if(t.id===st.get.id)st.get=t;if(t.id===SOL_MINT)st.solPrice=t.usdPrice}renderTokens();renderPay()}
+function rowHTML(t){const ok=t.isVerified===true;const held=isReal()?st.real?.[t.id]:null;
+  return `<button class="tok" role="option" data-id="${esc(t.id)}"><img class="ticon" src="${esc(t.icon||'')}" alt="" onerror="this.style.visibility='hidden'"><span><span class="nm">${esc(t.symbol)} ${ok?'<span class="vb" title="Verified">✓</span>':'<span class="wp">UNVERIFIED</span>'}</span><span class="meta">${esc(t.name)}</span></span><span class="rt">${held?'<span class="mono" style="color:var(--text)">'+tidy(held)+'</span><br>':''}<span class="mono">${usd(t.usdPrice)}</span>${!held&&t.liquidity?'<br>Liq '+compact(t.liquidity):''}</span></button>`}
+let shown=[];
+function showList(list){shown=list;$('tokList').innerHTML=list.length?list.map(rowHTML).join(''):'<p class="lead" style="padding:8px">No tokens found.</p>'}
+let sdeb;$('q').addEventListener('input',e=>{clearTimeout(sdeb);const v=e.target.value.trim();if(!v){showList(popular);return}
+  $('tokList').innerHTML='<p class="lead" style="padding:8px">Searching…</p>';sdeb=setTimeout(()=>search(v),300)});
+async function search(v){try{showList((await j('/tokens/v2/search?query='+encodeURIComponent(v))).slice(0,20))}catch(e){showList(popular.filter(t=>(t.symbol+t.name).toLowerCase().includes(v.toLowerCase())))}}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-pick]');if(b){st.pickSide=b.dataset.pick;$('q').value='';showList(popular);open('pickSheet');setTimeout(()=>$('q').focus(),50)}});
+$('tokList').addEventListener('click',e=>{const r=e.target.closest('.tok');if(!r)return;const t=shown.find(x=>x.id===r.dataset.id);if(!t)return;
+  closeAll();if(t.isVerified===true)setToken(st.pickSide,t);else safety(t)});
+let risky=null;
+function safety(t){risky=t;const days=t.createdAt?Math.max(1,Math.round((Date.now()-Date.parse(t.createdAt))/864e5)):null;
+  const top=t.audit?.topHoldersPercentage;const liq=t.liquidity;const looksLike=/jup|sol|usdc|usdt|bonk/i.test(t.symbol+t.name);
+  $('scamTitle').textContent=looksLike?`"${t.symbol}" is not the token it looks like`:`"${t.symbol}" isn't verified`;
+  $('scamLead').textContent=looksLike?'It uses a familiar name but isn\'t verified by Jupiter. Look-alikes are a common way people lose money.':'Jupiter hasn\'t verified this token. Check these before you buy.';
+  const row=(k,v,bad)=>`<div class="kv"><span>${k}</span><span class="${bad?'bad':'ok'}">${v}</span></div>`;
+  $('scamStats').innerHTML=(days!=null?row('Created',days<30?days+' days ago':Math.round(days/30)+' months ago',days<30):'')+
+    (top!=null?row('Top 10 wallets own',fmt(top,0)+'% of supply',top>30):'')+
+    (liq!=null?row('Liquidity',compact(liq)+(liq<50000?' · may be hard to sell':''),liq<50000):'')+
+    (t.holderCount!=null?row('Holders',fmt(t.holderCount,0),t.holderCount<5000):'')+
+    (t.organicScoreLabel?row('Real trading activity',esc(t.organicScoreLabel),t.organicScoreLabel!=='high'):'');
+  open('scamSheet')}
+$('scamBack').onclick=()=>{closeAll();$('q').value='';showList(popular);open('pickSheet')};
+$('riskAnyway').onclick=()=>{closeAll();setToken(st.pickSide,risky);toast('Unverified token selected. Double-check the address.')};
+
+// ---------- review → sign → execute ----------
+function minOf(q){return amt(q.otherAmountThreshold/10**st.get.decimals)+' '+st.get.symbol}
+$('review').onclick=()=>{if(!validate())return;const q=st.quote,a=st.pay,b=st.get,p=payAmount(),out=q.outAmount/10**b.decimals;
+  $('rPay').textContent=tidy(p)+' '+a.symbol;$('rPayUsd').textContent=a.usdPrice?usd(p*a.usdPrice):'';
+  $('rGet').textContent=amt(out)+' '+b.symbol;$('rMin').textContent='at least '+minOf(q);$('rFee').textContent=$('fee').textContent;open('reviewSheet')};
+function waitUi(title,lead){$('waitTitle').textContent=title;$('waitLead').innerHTML=lead;closeAll();open('waitSheet')}
+function fail(title,lead){closeAll();$('failTitle').textContent=title;$('failLead').textContent=lead;open('failSheet')}
+$('failRetry').onclick=()=>{closeAll();quote()};
+$('confirm').onclick=()=>isReal()?realSwap():demoSwap();
+
+async function realSwap(){
+  const b=st.get,a=st.pay;
+  waitUi('Preparing your swap','Getting a fresh price…');
+  let order;try{order=await j(orderUrl(true))}catch(e){return fail('Couldn\'t prepare the swap','Jupiter didn\'t respond. Your tokens didn\'t move. Try again in a moment.')}
+  if(!order.transaction){return fail('Couldn\'t prepare the swap',order.errorMessage||order.error||'No route right now. Your tokens didn\'t move.')}
+  waitUi('Approve in your wallet',`Your wallet should show: pay <b class="mono">${tidy(payAmount())} ${esc(a.symbol)}</b>, get at least <b class="mono">${minOf(order)}</b>. If it shows anything else, reject it.`);
+  let signed;
+  try{const res=await st.wallet.features['solana:signTransaction'].signTransaction({account:st.account,transaction:b64ToBytes(order.transaction),chain:'solana:mainnet'});
+    signed=(Array.isArray(res)?res[0]:res).signedTransaction}
+  catch(e){closeAll();toast('You cancelled in your wallet. Nothing was sent.');return}
+  if(!$('waitSheet').classList.contains('on'))return;
+  waitUi('Sending your swap','Landing it on Solana. This usually takes a few seconds.');$('waitCancel').hidden=true;
+  let ex;try{ex=await j('/ultra/v1/execute',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({signedTransaction:bytesToB64(signed),requestId:order.requestId})})}
+  catch(e){$('waitCancel').hidden=false;return fail('We couldn\'t confirm the swap','Check your wallet\'s activity before trying again, so you don\'t swap twice.')}
+  $('waitCancel').hidden=false;
+  if(ex.status==='Success'){
+    const out=(ex.outputAmountResult?+ex.outputAmountResult:+order.outAmount)/10**b.decimals,min=order.otherAmountThreshold/10**b.decimals;
+    $('dGet').textContent=amt(out)+' '+b.symbol;$('dBetter').textContent=out>min?', '+amt(out-min)+' '+b.symbol+' more than your guaranteed minimum.':'.';
+    $('dPay').textContent=tidy(payAmount())+' '+a.symbol;$('dFee').textContent=$('fee').textContent;
+    $('dLink').innerHTML=`<a href="https://solscan.io/tx/${encodeURIComponent(ex.signature)}" target="_blank" rel="noopener">View on Solscan ↗</a>`;
+    closeAll();open('doneSheet');setTimeout(loadBalances,1500);quote();
+  }else{
+    const msg=String(ex.error||'');const slip=/slippage|6001|0x1771|price/i.test(msg+ex.code);
+    if(slip){$('mOld').textContent=minOf(order);$('mNew').textContent='Fresh quote';$('mDiff').textContent='';closeAll();open('movedSheet')}
+    else fail('The swap didn\'t go through',(msg?msg+'. ':'')+'Your tokens weren\'t swapped. You can try again with a fresh quote.');
+    setTimeout(loadBalances,1500);
+  }
+}
+function demoSwap(){const b=st.get,q=st.quote;
+  waitUi('Approve in your wallet',`Demo mode: your wallet would show pay <b class="mono">${$('rPay').textContent}</b>, get at least <b class="mono">${minOf(q)}</b>.`);
+  setTimeout(()=>{if(!$('waitSheet').classList.contains('on'))return;closeAll();
+    if(st.scenario==='moved'){const old=q.otherAmountThreshold/10**b.decimals,nw=old*0.988;$('mOld').textContent=amt(old);$('mNew').textContent=amt(nw)+' '+b.symbol;$('mDiff').textContent=b.usdPrice?'≈ '+usd((old-nw)*b.usdPrice)+' less':'';open('movedSheet')}
+    else{const out=q.outAmount/10**b.decimals,min=q.otherAmountThreshold/10**b.decimals;$('dGet').textContent=amt(out)+' '+b.symbol;$('dBetter').textContent=out>min?', '+amt(out-min)+' '+b.symbol+' more than your guaranteed minimum.':'.';
+      $('dPay').textContent=$('rPay').textContent;$('dFee').textContent=$('fee').textContent;$('dLink').textContent='Demo mode (no transaction)';open('doneSheet');
+      DEMO[st.pay.id]=bal(st.pay)-payAmount();DEMO[b.id]=bal(b)+out;renderTokens();validate()}},1800)}
+$('retry').onclick=()=>{st.scenario=isReal()?'happy':'happy';closeAll();quote().then(()=>$('review').click())};
+
+// ---------- demo scenarios (no wallet) ----------
+function scenario(m){closeAll();st.scenario=m;$('lowSol').hidden=m!=='lowsol';$('fixSol').hidden=false;
+  $('lowSolTxt').textContent='You have 0.0008 SOL; a swap needs about 0.003 SOL (fee + a new token account). Without it the swap would fail.';
+  if(m==='lowsol')DEMO[SOL_MINT]=0.0008;else if((DEMO[SOL_MINT]||0)<0.003)DEMO[SOL_MINT]=3.2;
+  if(m==='scam'){st.pickSide='get';$('q').value='jup';open('pickSheet');search('jup')}
+  renderTokens();validate()}
+document.querySelectorAll('[data-demo]').forEach(b=>b.onclick=()=>scenario(b.dataset.demo));
+$('fixSol').onclick=()=>{DEMO[SOL_MINT]=0.0058;st.scenario='happy';$('lowSol').hidden=true;renderTokens();validate();toast('0.005 SOL will be set aside from this swap for fees')};
+
+renderTokens();quote();loadPopular();
+</script>
+</body>
+</html>
